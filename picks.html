@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude's Picks — AI Supply Chain</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0b0e14;
+    --surface:   #131820;
+    --surface2:  #1a2030;
+    --border:    #232d3f;
+    --text:      #d4dae4;
+    --text-dim:  #7a8599;
+    --c-design:  #6ee7b7;
+    --c-mask:    #38bdf8;
+    --c-fab:     #c084fc;
+    --c-sort:    #fb923c;
+    --c-dieprep: #2dd4bf;
+    --c-package: #f472b6;
+    --c-module:  #fbbf24;
+    --c-system:  #818cf8;
+    --c-power:   #ef4444;
+    --c-cooling: #22d3ee;
+    --c-dcnet:   #e879f9;
+    --c-facility:#a3e635;
+    --c-cloud:   #94a3b8;
+    --radius:    12px;
+    --radius-sm: 8px;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.02em; }
+
+  /* ─── Top Bar ─── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  }
+  .topbar-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text-dim); text-decoration: none; font-size: 0.82rem; font-weight: 600;
+    padding: 8px 14px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface2);
+    transition: all 0.2s;
+  }
+  .topbar-back:hover { color: var(--text); border-color: var(--text-dim); }
+  .topbar-nav { display: flex; gap: 8px; }
+  .topbar-nav a {
+    color: var(--text-dim); text-decoration: none; font-size: 0.78rem; font-weight: 600;
+    padding: 8px 14px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface2);
+    transition: all 0.2s;
+  }
+  .topbar-nav a:hover { color: var(--text); border-color: var(--text-dim); }
+
+  /* ─── Hero ─── */
+  .hero { text-align: center; padding: 72px 24px 20px; position: relative; }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(110,231,183,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+    background: linear-gradient(135deg, var(--c-design), var(--c-mask), var(--c-fab), var(--c-package));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .hero p { color: var(--text-dim); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+  /* ─── Disclaimer ─── */
+  .disclaimer {
+    max-width: 760px; margin: 24px auto 40px; padding: 14px 20px;
+    background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15);
+    border-radius: var(--radius-sm); font-size: 0.76rem; color: var(--text-dim); line-height: 1.6;
+  }
+  .disclaimer strong { color: #ef4444; }
+
+  /* ─── Sections ─── */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
+  .section { margin-bottom: 72px; }
+  .section-header { margin-bottom: 32px; }
+  .section-label {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+  .section-title { font-size: 1.6rem; margin-bottom: 8px; }
+  .section-subtitle { color: var(--text-dim); font-size: 0.9rem; max-width: 640px; }
+
+  /* ─── Pick Cards ─── */
+  .pick {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .pick:hover { border-color: #333d4f; }
+  .pick::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 4px; height: 100%;
+  }
+  .pick-top {
+    display: flex; align-items: flex-start; gap: 16px; margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .pick-rank {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 800; flex-shrink: 0;
+    border: 2px solid;
+  }
+  .pick-info { flex: 1; min-width: 200px; }
+  .pick-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 2px; }
+  .pick-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pick-ticker {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.78rem; font-weight: 700; padding: 2px 10px;
+    border-radius: 4px;
+  }
+  .pick-exchange { font-size: 0.78rem; color: var(--text-dim); }
+  .pick-stages { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .pick-stage {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 999px; font-size: 0.68rem; font-weight: 600;
+    background: var(--surface2); border: 1px solid var(--border);
+  }
+  .pick-stage .sdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .pick-position {
+    font-size: 0.85rem; font-weight: 700; margin-bottom: 10px;
+  }
+  .pick-rationale {
+    font-size: 0.88rem; line-height: 1.7; color: var(--text);
+  }
+  .pick-yf {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 14px; padding: 8px 16px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text-dim); text-decoration: none; font-size: 0.76rem; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .pick-yf:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* ─── Color themes for sections ─── */
+  .section--important .section-label { color: var(--c-mask); }
+  .section--important .pick::before { background: var(--c-mask); }
+  .section--important .pick-rank { color: var(--c-mask); border-color: rgba(56,189,248,0.3); background: rgba(56,189,248,0.08); }
+  .section--important .pick-ticker { color: var(--c-mask); background: rgba(56,189,248,0.1); }
+
+  .section--undervalued .section-label { color: var(--c-design); }
+  .section--undervalued .pick::before { background: var(--c-design); }
+  .section--undervalued .pick-rank { color: var(--c-design); border-color: rgba(110,231,183,0.3); background: rgba(110,231,183,0.08); }
+  .section--undervalued .pick-ticker { color: var(--c-design); background: rgba(110,231,183,0.1); }
+
+  .section--challengers .section-label { color: var(--c-sort); }
+  .section--challengers .pick::before { background: var(--c-sort); }
+  .section--challengers .pick-rank { color: var(--c-sort); border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.08); }
+  .section--challengers .pick-ticker { color: var(--c-sort); background: rgba(251,146,60,0.1); }
+
+  .section--monopolies .section-label { color: var(--c-fab); }
+  .section--monopolies .pick::before { background: var(--c-fab); }
+  .section--monopolies .pick-rank { color: var(--c-fab); border-color: rgba(192,132,252,0.3); background: rgba(192,132,252,0.08); }
+  .section--monopolies .pick-ticker { color: var(--c-fab); background: rgba(192,132,252,0.1); }
+
+  /* ─── Footer ─── */
+  .footer {
+    text-align: center; padding: 40px 24px; color: var(--text-dim);
+    font-size: 0.76rem; border-top: 1px solid var(--border);
+    max-width: 900px; margin: 0 auto;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    .hero { padding: 48px 16px 16px; }
+    .pick { padding: 20px; }
+    .pick-top { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="topbar-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M5 12l6-6M5 12l6 6"/></svg>
+    Supply Chain Map
+  </a>
+  <div class="topbar-nav">
+    <a href="#important">Most Important</a>
+    <a href="#monopolies">Strongest Monopolies</a>
+    <a href="#challengers">Rising Challengers</a>
+    <a href="#undervalued">Most Undervalued</a>
+  </div>
+</div>
+
+<header class="hero">
+  <h1>Claude's Picks</h1>
+  <p>An AI equity analyst's view on the most critical and most undervalued companies across the AI data center supply chain.</p>
+</header>
+
+<div class="disclaimer">
+  <strong>Disclaimer:</strong> This is for educational and informational purposes only. It does not constitute investment advice, a recommendation, or solicitation to buy or sell any securities. Always conduct your own research and consult a licensed financial advisor before making investment decisions.
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 10 MOST IMPORTANT COMPANIES            -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section section--important" id="important">
+  <div class="section-header">
+    <div class="section-label">Critical Infrastructure</div>
+    <h2 class="section-title">10 Most Important Companies</h2>
+    <p class="section-subtitle">Ranked by how much the AI data center supply chain depends on them. If any of these companies disappeared tomorrow, the entire buildout stalls.</p>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">1</div>
+      <div class="pick-info">
+        <div class="pick-name">TSMC</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">TSM</span>
+          <span class="pick-exchange">NYSE &middot; Taiwan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Wafer Fab</span>
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>Advanced Packaging</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~84% advanced logic foundry &middot; Sole CoWoS provider at scale</div>
+    <div class="pick-rationale">
+      The single most irreplaceable company in the AI supply chain. TSMC fabricates over 90% of the world's advanced-node chips — every NVIDIA GPU, AMD MI accelerator, Apple Silicon, Google TPU, and Amazon Trainium flows through their fabs. They also operate the only CoWoS advanced packaging line at scale. There is no substitute: Samsung's yields trail significantly at comparable nodes, and Intel Foundry is years from being competitive. If TSMC stopped producing tomorrow, the entire AI revolution halts within weeks.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/TSM" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">2</div>
+      <div class="pick-info">
+        <div class="pick-name">NVIDIA</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">NVDA</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#6ee7b7"></span>Design &amp; Tapeout</span>
+          <span class="pick-stage"><span class="sdot" style="background:#e879f9"></span>DC Networking</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~80% AI accelerator share &middot; NVLink/NVSwitch &middot; Spectrum-X</div>
+    <div class="pick-rationale">
+      NVIDIA's dominance spans both the chip and the network. Their GPU architecture and CUDA software ecosystem create switching costs that no competitor has overcome — AMD's ROCm is years behind, and custom silicon (TPU, Trainium) only works for internal hyperscaler workloads. Beyond GPUs, NVIDIA's NVLink interconnect and Spectrum-X networking fabric are becoming the default for AI cluster networking. They define the AI data center architecture that everyone else builds around.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/NVDA" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">3</div>
+      <div class="pick-info">
+        <div class="pick-name">ASML</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">ASML</span>
+          <span class="pick-exchange">NASDAQ &middot; Netherlands</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#38bdf8"></span>Photomask &amp; Lithography</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">100% EUV lithography monopoly &middot; 5+ year order backlog</div>
+    <div class="pick-rationale">
+      The most absolute monopoly in the technology industry. ASML is the sole manufacturer of EUV lithography systems — the $380M machines required to print transistors below 7nm. No chip in any NVIDIA GPU, AMD accelerator, or Apple processor can be made without ASML's scanners. The technology took 30 years and $10B+ to develop, requires sole-source optics from ZEISS and lasers from TRUMPF, and no competitor is even attempting to replicate it. Their backlog stretches years into the future.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/ASML" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">4</div>
+      <div class="pick-info">
+        <div class="pick-name">SK Hynix</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">000660</span>
+          <span class="pick-exchange">KRX &middot; South Korea</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>HBM Stacks</span>
+          <span class="pick-stage"><span class="sdot" style="background:#fbbf24"></span>Module Assembly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~57% HBM market share &middot; Sole initial HBM3E supplier for NVIDIA</div>
+    <div class="pick-rationale">
+      High Bandwidth Memory is the critical memory bottleneck for AI. Every GPU needs HBM stacks, and SK Hynix makes more than half of the world's supply. They were the sole initial supplier of HBM3E for NVIDIA's H200 and B200, and are leading the transition to HBM4 for the Rubin generation. HBM production requires advanced die stacking and TSV technology that only three companies in the world can do — and SK Hynix is years ahead of Samsung and Micron in yield and qualification.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/000660.KS" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">5</div>
+      <div class="pick-info">
+        <div class="pick-name">Schneider Electric</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">SU</span>
+          <span class="pick-exchange">EPA &middot; France</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#ef4444"></span>Power</span>
+          <span class="pick-stage"><span class="sdot" style="background:#22d3ee"></span>Cooling</span>
+          <span class="pick-stage"><span class="sdot" style="background:#a3e635"></span>Facility</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">#1 in UPS, switchgear, PDUs, busbars &middot; Appears across 7+ subsystem cards</div>
+    <div class="pick-rationale">
+      No single company touches more parts of the data center than Schneider Electric. They hold the #1 position in UPS systems (APC), switchgear, power distribution units, and busbar systems — plus significant presence in precision cooling, liquid cooling, racks, and modular data centers. Their EcoStruxure DCIM platform ties it all together. When a hyperscaler builds a new AI data center, Schneider is on virtually every purchase order. They are to data center infrastructure what TSMC is to chip fabrication.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/SU.PA" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">6</div>
+      <div class="pick-info">
+        <div class="pick-name">Applied Materials</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">AMAT</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Wafer Fab</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~70% CMP &middot; ~33% implant &middot; ~17% inspection &middot; #1 deposition</div>
+    <div class="pick-rationale">
+      The broadest semiconductor equipment company in the world. Applied Materials holds leadership positions across more process steps than any competitor — deposition, etch, CMP (near-monopoly at ~70%), ion implantation, and inspection. A single TSMC fab uses Applied Materials tools in dozens of different process steps. While ASML gets headlines for EUV, Applied Materials' equipment touches a wafer far more times during fabrication. They are the picks-and-shovels backbone of semiconductor manufacturing.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/AMAT" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">7</div>
+      <div class="pick-info">
+        <div class="pick-name">Broadcom</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">AVGO</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#6ee7b7"></span>Custom Silicon</span>
+          <span class="pick-stage"><span class="sdot" style="background:#e879f9"></span>DC Networking</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~75% switch ASIC monopoly &middot; Google TPU designer &middot; #2 NICs/DPUs</div>
+    <div class="pick-rationale">
+      Broadcom is the hidden infrastructure layer of AI networking. Their Memory switch ASICs power ~75% of all data center Ethernet switches — meaning nearly every packet in every AI cluster flows through Broadcom silicon. They also design Google's TPU custom AI accelerators and hold the #2 position in NICs/DPUs. While NVIDIA gets credit for AI computing, Broadcom is equally critical for AI networking. The switch ASIC monopoly alone makes them irreplaceable.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/AVGO" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">8</div>
+      <div class="pick-info">
+        <div class="pick-name">KLA Corp</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">KLAC</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#38bdf8"></span>Mask Inspection</span>
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Wafer Inspection</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~57% process control &middot; ~34% EUV mask inspection</div>
+    <div class="pick-rationale">
+      KLA is the quality gatekeeper of semiconductor manufacturing. Their inspection and metrology tools verify that every layer on every wafer meets spec — without them, yield collapses and fabs produce expensive scrap. At ~57% of the process control market, they dominate a segment that grows in importance as nodes shrink (more layers = more inspection). They also hold a key position in EUV mask inspection. No advanced fab runs without KLA's approval at dozens of process checkpoints.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/KLAC" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">9</div>
+      <div class="pick-info">
+        <div class="pick-name">Tokyo Electron</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">8035</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Wafer Fab</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~90% coat-develop track monopoly &middot; #3 etch &middot; #3 deposition</div>
+    <div class="pick-rationale">
+      Tokyo Electron holds a near-total monopoly on coat-develop track systems — the equipment that applies and develops photoresist before and after every lithography step. With ~90% share (approaching 100% for EUV tracks), they are as essential to lithography as ASML itself: every EUV exposure requires TEL's coater and developer on either side. Beyond track, they hold strong #3 positions in etch and deposition. Their tools touch a wafer at virtually every stage of fabrication.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/8035.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">10</div>
+      <div class="pick-info">
+        <div class="pick-name">Vertiv Holdings</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">VRT</span>
+          <span class="pick-exchange">NYSE &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#ef4444"></span>Power</span>
+          <span class="pick-stage"><span class="sdot" style="background:#22d3ee"></span>Cooling</span>
+          <span class="pick-stage"><span class="sdot" style="background:#a3e635"></span>Facility</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">#2 UPS &middot; #1 liquid cooling &middot; #2 precision cooling &middot; #2 PDUs &middot; #2 racks</div>
+    <div class="pick-rationale">
+      Vertiv is the most concentrated pure-play on AI data center infrastructure. While Schneider is larger overall, Vertiv derives a higher percentage of revenue from data centers. They hold top-2 positions across UPS, precision cooling, liquid cooling (increasingly critical for AI GPU racks), PDUs, and server racks. As AI power density per rack climbs from 20kW to 100kW+, Vertiv's thermal and power delivery solutions become non-negotiable. They appear across more infrastructure subsystem cards than any company except Schneider.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/VRT" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 10 STRONGEST MONOPOLIES                -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section section--monopolies" id="monopolies">
+  <div class="section-header">
+    <div class="section-label">Market Dominance</div>
+    <h2 class="section-title">10 Strongest Monopolies</h2>
+    <p class="section-subtitle">Ranked by market concentration and lack of viable substitutes. These companies have pricing power, multi-year visibility, and competitors that are years from catching up.</p>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">1</div>
+      <div class="pick-info">
+        <div class="pick-name">ASML</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">ASML</span>
+          <span class="pick-exchange">NASDAQ &middot; Netherlands</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#38bdf8"></span>EUV Lithography</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">100% EUV lithography &middot; 100% High-NA EUV &middot; Zero competitors</div>
+    <div class="pick-rationale">
+      The most absolute monopoly in all of technology. There is no second source for EUV lithography — not a distant competitor, not an emerging startup, nothing. The technology required 30 years, $10B+, and convergence of three sole-source suppliers (ASML systems, ZEISS optics, TRUMPF lasers) to create. No nation, company, or consortium is attempting to replicate it. Every advanced chip in the world flows through ASML's machines.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/ASML" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">2</div>
+      <div class="pick-info">
+        <div class="pick-name">Lasertec</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">6920</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#38bdf8"></span>EUV Mask Inspection</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">100% actinic EUV mask inspection &middot; Only tool using 13.5nm wavelength</div>
+    <div class="pick-rationale">
+      A monopoly as absolute as ASML's but far less well-known. Lasertec is the sole manufacturer of actinic EUV mask inspection tools — the only equipment that can detect defects on photomasks at the actual 13.5nm EUV wavelength. Every EUV mask in the world must be inspected by a Lasertec system before it can be used in production. KLA offers non-actinic optical approaches but cannot see the same class of defects. A tiny Japanese company with an outsized chokehold on the entire EUV ecosystem.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/6920.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">3</div>
+      <div class="pick-info">
+        <div class="pick-name">Tokyo Electron</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">8035</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Coat-Develop Track</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~90% coat-develop track &middot; Near-100% for EUV tracks</div>
+    <div class="pick-rationale">
+      Every lithography exposure — and there are dozens per wafer — requires photoresist to be coated before and developed after. Tokyo Electron controls ~90% of the track systems that perform these steps, rising to near-100% for EUV-compatible tracks. SCREEN's ~7% share exists only in older nodes. TEL's tracks are so tightly coupled to ASML scanners that they're effectively sold as a pair. A monopoly that hides in ASML's shadow.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/8035.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">4</div>
+      <div class="pick-info">
+        <div class="pick-name">IMS Nanofabrication (ZEISS)</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">Private</span>
+          <span class="pick-exchange">ZEISS subsidiary &middot; Austria</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#38bdf8"></span>Mask Writers</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~82% multi-beam mask writers &middot; Only viable e-beam mask writing platform</div>
+    <div class="pick-rationale">
+      Every EUV photomask must be written by a multi-beam electron beam tool, and IMS Nanofabrication (a ZEISS subsidiary) makes ~82% of them. Their MBMW-101 is the industry standard for writing the complex curvilinear patterns required by EUV and High-NA EUV masks. NuFlare's single-beam tools at ~18% are slower and increasingly inadequate for advanced patterns. A private company, but the monopoly is critical to understand the supply chain's fragility.
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">5</div>
+      <div class="pick-info">
+        <div class="pick-name">NVIDIA</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">NVDA</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#6ee7b7"></span>AI Accelerators</span>
+          <span class="pick-stage"><span class="sdot" style="background:#e879f9"></span>NVLink / NVSwitch</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~80% AI accelerator share &middot; CUDA ecosystem lock-in</div>
+    <div class="pick-rationale">
+      NVIDIA's ~80% share of AI accelerators understates their actual monopoly power. The real moat is CUDA — a software ecosystem with 4M+ developers, millions of lines of optimized libraries, and a decade of ML framework integration. Switching from NVIDIA to AMD or custom silicon means rewriting and re-optimizing entire software stacks. This software lock-in makes NVIDIA's hardware monopoly self-reinforcing in a way that pure market share numbers don't capture.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/NVDA" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">6</div>
+      <div class="pick-info">
+        <div class="pick-name">Broadcom</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">AVGO</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#e879f9"></span>Switch ASICs</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~75% Ethernet switch ASICs &middot; Tomahawk / Jericho families</div>
+    <div class="pick-rationale">
+      Nearly every data center Ethernet switch in the world — from Arista, Cisco, and white-box vendors alike — runs on a Broadcom switch ASIC. Their Tomahawk and Jericho chip families define the industry's switching capacity roadmap. Marvell is the only alternative at ~20%, but Broadcom's ecosystem of SDK, drivers, and qualification makes displacement extremely difficult. A silicon monopoly that sits beneath every brand name in networking.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/AVGO" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">7</div>
+      <div class="pick-info">
+        <div class="pick-name">Applied Materials</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">AMAT</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>CMP Equipment</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~70% CMP equipment &middot; Ebara (~27%) is the only alternative</div>
+    <div class="pick-rationale">
+      Chemical-mechanical planarization — flattening the wafer surface between deposition steps — is performed dozens of times per wafer. Applied Materials controls ~70% of CMP equipment, with Japan's Ebara the sole meaningful alternative at ~27%. At advanced nodes, CMP uniformity directly determines yield, giving AMAT significant pricing power. This near-monopoly is just one of several dominant positions AMAT holds across different process steps.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/AMAT" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">8</div>
+      <div class="pick-info">
+        <div class="pick-name">KLA Corp</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">KLAC</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Inspection / Metrology</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~57% process control &middot; Share growing from 50% in 2010</div>
+    <div class="pick-rationale">
+      KLA's dominance in process control is not just large — it's expanding. Their share has grown from ~50% in 2010 to ~57% today because advanced nodes require more sophisticated inspection that only KLA's platforms can deliver. At EUV nodes, the number of inspection steps per wafer increases dramatically, and KLA captures most of that growth. Applied Materials at ~17% is a distant second. When fabs set yield targets, KLA's tools are the arbiter.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/KLAC" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">9</div>
+      <div class="pick-info">
+        <div class="pick-name">DISCO Corp</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">6146</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#2dd4bf"></span>Wafer Dicing</span>
+          <span class="pick-stage"><span class="sdot" style="background:#2dd4bf"></span>Wafer Grinding</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~55% wafer dicing &middot; ~47% wafer grinding &middot; Tokyo Seimitsu is only real competitor</div>
+    <div class="pick-rationale">
+      Every semiconductor die must be singulated from its wafer, and DISCO's precision dicing saws and laser cutting systems do over half of it globally. In wafer grinding (thinning wafers for 3D stacking and advanced packaging), they hold ~47%. Tokyo Seimitsu is the only real competitor. As advanced packaging drives thinner wafers and finer-pitch dicing, the precision requirements increase — playing directly to DISCO's technological lead.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/6146.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">10</div>
+      <div class="pick-info">
+        <div class="pick-name">Canon</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">7751</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>Packaging Lithography</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~55% advanced packaging lithography &middot; i-line &amp; KrF steppers for RDL patterning</div>
+    <div class="pick-rationale">
+      While ASML dominates front-end lithography, Canon quietly controls ~55% of the packaging lithography market — the steppers that pattern redistribution layers, bumping, and fan-out structures on interposers and packages. Every CoWoS interposer, every fan-out package requires Canon's i-line or KrF systems. As advanced packaging volumes surge for AI, Canon's packaging lithography business is growing rapidly while their lost front-end business fades from relevance.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/7751.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 10 RISING CHALLENGERS                  -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section section--challengers" id="challengers">
+  <div class="section-header">
+    <div class="section-label">Ones to Watch</div>
+    <h2 class="section-title">10 Rising Challengers</h2>
+    <p class="section-subtitle">Smaller companies actively gaining market share with a credible path to becoming much bigger. These are the disruptors and fast-followers across the AI supply chain.</p>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">1</div>
+      <div class="pick-info">
+        <div class="pick-name">Technoprobe</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">TPRO</span>
+          <span class="pick-exchange">BIT &middot; Italy</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#fb923c"></span>Probe Cards</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~22% probe cards (#2) &middot; Won 30% of TSMC 2nm qualification sockets</div>
+    <div class="pick-rationale">
+      The fastest-growing probe card maker in the world. Technoprobe has surged from a niche Italian supplier to #2 globally at ~22%, closing the gap on FormFactor's ~28%. Their breakthrough moment: winning 30% of TSMC's 2nm probe card qualification sockets — a dramatic gain at the most important foundry in the world. Their vertical MEMS probe technology is proving competitive at the most advanced nodes, and TSMC qualification is a beachhead that expands with every new customer tape-out.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/TPRO.MI" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">2</div>
+      <div class="pick-info">
+        <div class="pick-name">ACM Research</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">ACMR</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Wet Cleaning</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~10% wet cleaning (#3) &middot; Fastest-growing cleaning equipment vendor</div>
+    <div class="pick-rationale">
+      ACM Research's proprietary SAPS and TEBO megasonic cleaning technologies are genuinely differentiated — they clean at frequencies and energy levels that conventional spray-based systems cannot match. Growing from ~10% against entrenched incumbents SCREEN (~45%) and TEL (~20%). Their China-heavy customer base (~70% revenue) is both their growth engine and biggest risk, but the technology itself is winning evaluations on merit. If geopolitical tensions ease, their addressable market expands dramatically.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/ACMR" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">3</div>
+      <div class="pick-info">
+        <div class="pick-name">Hanmi Semiconductor</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">042700</span>
+          <span class="pick-exchange">KRX &middot; South Korea</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>Bonding Equipment</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~17% TC bonding (#3) &middot; Gaining share in HBM and advanced packaging</div>
+    <div class="pick-rationale">
+      The Korean challenger in the critical thermocompression bonding market. Hanmi has grown to ~17% share behind Besi (~37%) and ASMPT (~22%) by offering competitive bonding tools at lower price points with strong SK Hynix and Samsung relationships. As HBM production scales exponentially for AI, bonding tool demand outstrips supply from the top two — creating an opening for Hanmi to capture overflow capacity. Their domestic Korean customer base gives them a structural advantage for HBM bonding specifically.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/042700.KS" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">4</div>
+      <div class="pick-info">
+        <div class="pick-name">Axcelis Technologies</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">ACLS</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Ion Implantation</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~28% ion implantation (#2) &middot; Gaining share from Applied Materials</div>
+    <div class="pick-rationale">
+      Axcelis is the pure-play David to Applied Materials' Goliath in ion implantation. While AMAT spreads R&D across 15+ product lines, Axcelis focuses 100% on implant — and it shows. Their Purion platform has been winning competitive evaluations and gaining share, growing from ~20% to ~28% over recent years. Every advanced logic wafer requires multiple implant steps for transistor junction formation. Focused pure-plays with improving technology tend to be underestimated until they're not.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/ACLS" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">5</div>
+      <div class="pick-info">
+        <div class="pick-name">Micron Technology</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">MU</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>HBM Stacks</span>
+          <span class="pick-stage"><span class="sdot" style="background:#fbbf24"></span>Module Assembly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~21% HBM (#3) &middot; Only US-based HBM manufacturer &middot; Ramping aggressively</div>
+    <div class="pick-rationale">
+      Micron went from a distant third in HBM to a credible challenger ramping aggressively. Their HBM3E is now qualified with NVIDIA, and they're investing billions in HBM4 capacity. As the only US-based HBM manufacturer, they carry strategic importance under the CHIPS Act and for supply chain diversification away from Korean concentration. If SK Hynix hits capacity limits — which is likely given AI demand — Micron is the primary beneficiary of overflow orders.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/MU" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">6</div>
+      <div class="pick-info">
+        <div class="pick-name">Marvell Technology</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">MRVL</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#e879f9"></span>Switch ASICs</span>
+          <span class="pick-stage"><span class="sdot" style="background:#e879f9"></span>Custom AI Silicon</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~20% switch ASICs (#2) &middot; Custom AI accelerator design wins growing</div>
+    <div class="pick-rationale">
+      Marvell is the only company chipping away at Broadcom's ~75% switch ASIC dominance, and they're simultaneously building a custom AI silicon business with major hyperscaler design wins. Their Teralynx switch family and custom ASIC platform give hyperscalers an alternative to Broadcom's lock-in. The custom silicon revenue is still early but growing rapidly — Amazon, Microsoft, and others want alternatives to both NVIDIA (for compute) and Broadcom (for networking). Marvell is positioned to be that alternative.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/MRVL" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">7</div>
+      <div class="pick-info">
+        <div class="pick-name">Coherent Corp</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">COHR</span>
+          <span class="pick-exchange">NYSE &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#818cf8"></span>Optical Transceivers</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~17% optical transceivers (#3) &middot; Largest Western transceiver supplier</div>
+    <div class="pick-rationale">
+      The transition from 400G to 800G and 1.6T optical transceivers is a massive upgrade cycle, and Coherent (formerly II-VI + Finisar) is the largest Western supplier at ~17% share. While Chinese vendors InnoLight and Eoptolink lead on volume, Coherent's vertical integration — they manufacture their own laser chips, not just assemble modules — gives them a technology and quality edge for the highest-speed applications. As AI clusters demand 1.6T optics, Coherent's vertically integrated model becomes increasingly valuable.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/COHR" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">8</div>
+      <div class="pick-info">
+        <div class="pick-name">Bloom Energy</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">BE</span>
+          <span class="pick-exchange">NYSE &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#ef4444"></span>On-Site Power Generation</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">Fuel cell leader &middot; 1 GW AEP supply agreement &middot; On-site DC power pioneer</div>
+    <div class="pick-rationale">
+      Grid power is becoming the #1 bottleneck for new AI data centers — utilities can't deliver enough megawatts fast enough. Bloom Energy's solid oxide fuel cells offer on-site power generation that bypasses the grid entirely. Their landmark 1 GW supply agreement with AEP validates the model. While nuclear SMRs get more hype, Bloom's fuel cells are deployable today, not in 2030. As hyperscalers grow desperate for power, behind-the-meter generation goes from niche to necessity.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/BE" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">9</div>
+      <div class="pick-info">
+        <div class="pick-name">ONTO Innovation</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">ONTO</span>
+          <span class="pick-exchange">NYSE &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Inspection</span>
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>Packaging Lithography</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~4% process control &middot; ~15% packaging lithography (#2) &middot; Dual growth vectors</div>
+    <div class="pick-rationale">
+      ONTO has a unique dual position spanning front-end metrology and back-end packaging lithography — two segments both growing with AI. Their packaging lithography business (~15% share, #2 behind Canon) rides the advanced packaging wave directly: more CoWoS, more fan-out, more RDL layers means more packaging litho steps. Meanwhile, their front-end optical metrology grows with node complexity. Few companies have two independent growth vectors tied to AI chip production.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/ONTO" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">10</div>
+      <div class="pick-info">
+        <div class="pick-name">nVent Electric</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">NVT</span>
+          <span class="pick-exchange">NYSE &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#22d3ee"></span>Liquid Cooling</span>
+          <span class="pick-stage"><span class="sdot" style="background:#fbbf24"></span>Thermal Management</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~7% liquid cooling &middot; Thermal management &amp; enclosures for GPU racks</div>
+    <div class="pick-rationale">
+      As AI GPU power density climbs past 100kW per rack, air cooling becomes physically impossible — liquid cooling transitions from optional to mandatory. nVent Electric is growing into this transition with rear-door heat exchangers, coolant distribution units, and thermal management solutions specifically designed for high-density GPU racks. They're smaller than Vertiv and Schneider but more focused, and the liquid cooling TAM is expanding at 25%+ annually. Early positioning in a market that's about to become essential.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/NVT" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 10 MOST UNDERVALUED COMPANIES          -->
+<!-- ═══════════════════════════════════════ -->
+<div class="section section--undervalued" id="undervalued">
+  <div class="section-header">
+    <div class="section-label">Hidden Gems</div>
+    <h2 class="section-title">10 Most Undervalued Companies</h2>
+    <p class="section-subtitle">Companies where the market hasn't fully priced in their AI supply chain positioning — often due to foreign listings, conglomerate structures, or "boring industrial" perception.</p>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">1</div>
+      <div class="pick-info">
+        <div class="pick-name">DISCO Corp</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">6146</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#2dd4bf"></span>Die Preparation</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~55% wafer dicing &middot; ~47% wafer grinding</div>
+    <div class="pick-rationale">
+      Near-monopoly in precision wafer dicing and grinding, yet trades on a Japanese industrial multiple. Every AI chip must be singulated from its wafer using DISCO's blades or laser saws. Advanced packaging trends — thinner wafers, more chiplets, finer pitch dicing for CoWoS interposers — are a direct tailwind that increases both the number of cuts per wafer and the ASP of each tool. The market treats this as a boring industrial equipment company, not the monopoly gatekeeper it actually is.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/6146.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">2</div>
+      <div class="pick-info">
+        <div class="pick-name">SCREEN Holdings</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">7735</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Wet Cleaning</span>
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Coat-Develop Track</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~45% wet cleaning (#1) &middot; ~7% coat-develop track (#2)</div>
+    <div class="pick-rationale">
+      Everyone knows SCREEN as the distant #2 in coat-develop track (~7% vs TEL's ~90%). Almost nobody talks about their ~45% dominance in wet cleaning — the single most repeated step in semiconductor fabrication, performed 100+ times per wafer. As nodes shrink, particle requirements get exponentially tighter, making cleaning more critical and more valuable. SCREEN's wet cleaning monopoly is a hidden crown jewel obscured by their tiny track share.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/7735.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">3</div>
+      <div class="pick-info">
+        <div class="pick-name">Resonac Holdings</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">4004</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>Encapsulation</span>
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>CMP Slurry</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~28% epoxy molding compounds (#1) &middot; CMP slurries &middot; SiC wafers</div>
+    <div class="pick-rationale">
+      The Showa Denko + Hitachi Chemical merger created the world's broadest semiconductor packaging materials company, but post-restructuring complexity has kept the stock depressed. Underneath the corporate noise, they hold the #1 position in epoxy molding compounds — a material used to encapsulate every packaged AI chip. As advanced packaging complexity grows (more layers, larger packages, tighter reliability specs), Resonac's materials become more critical. Classic turnaround with leading market positions hiding underneath.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/4004.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">4</div>
+      <div class="pick-info">
+        <div class="pick-name">ASMPT</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">0522</span>
+          <span class="pick-exchange">HKEX &middot; Hong Kong</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>Bonding Equipment</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~22% bonding share (#2) &middot; Broadest assembly equipment portfolio</div>
+    <div class="pick-rationale">
+      Besi gets all the investor attention for advanced packaging equipment, but ASMPT has the broadest assembly equipment portfolio and the #2 bonding position. The Hong Kong listing creates a structural valuation discount — Western investors either can't or won't buy HKEX stocks, despite ASMPT having nearly identical AI packaging exposure as Besi. As CoWoS and HBM bonding capacity expands, ASMPT benefits at a fraction of Besi's multiple.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/0522.HK" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">5</div>
+      <div class="pick-info">
+        <div class="pick-name">Ibiden</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">4062</span>
+          <span class="pick-exchange">TSE &middot; Japan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#f472b6"></span>ABF Substrates</span>
+          <span class="pick-stage"><span class="sdot" style="background:#fbbf24"></span>Module Assembly</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~15% ABF substrates (#2) &middot; Critical for GPU packaging</div>
+    <div class="pick-rationale">
+      Every NVIDIA GPU sits on an ABF substrate — the high-layer-count organic board that connects the chip to the rest of the system. Ibiden is the #2 maker of these substrates and a key supplier for high-performance computing packages. ABF substrates have been a genuine bottleneck with multi-quarter lead times, yet Ibiden trades as a sleepy Japanese industrial. The market underprices how essential and supply-constrained their product is as AI chip packages grow larger and more complex.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/4062.T" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">6</div>
+      <div class="pick-info">
+        <div class="pick-name">Hon Hai (Foxconn)</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">2317</span>
+          <span class="pick-exchange">TWSE &middot; Taiwan</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#818cf8"></span>System Integration</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">#1 electronics manufacturer globally &middot; Building GB200 NVL72 racks at scale</div>
+    <div class="pick-rationale">
+      The largest electronics manufacturer in the world perpetually trades at 8-12x earnings. The market still prices Foxconn as a low-margin iPhone assembler, but their revenue mix is rapidly shifting toward high-value AI server integration — they're the primary manufacturer of NVIDIA's GB200 NVL72 racks. AI server assembly is higher-margin and higher-growth than consumer electronics. The valuation gap between "iPhone assembler" perception and "AI infrastructure builder" reality is significant.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/2317.TW" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">7</div>
+      <div class="pick-info">
+        <div class="pick-name">Prysmian Group</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">PRY</span>
+          <span class="pick-exchange">BIT &middot; Italy</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#e879f9"></span>Fiber Optic Cabling</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~15% fiber optic cabling (#2) &middot; #1 submarine cable maker</div>
+    <div class="pick-rationale">
+      The #2 fiber optic cable maker behind Corning, trading on an Italian industrial multiple. AI data center builds are driving a multi-year fiber demand supercycle — a single 10,000-GPU cluster requires millions of feet of fiber. Prysmian also holds the #1 position in submarine cables, benefiting from global data center interconnection. The European listing and "cable company" perception mask what is increasingly an AI infrastructure growth story at a value multiple.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/PRY.MI" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">8</div>
+      <div class="pick-info">
+        <div class="pick-name">Axcelis Technologies</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">ACLS</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#c084fc"></span>Ion Implantation</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~28% ion implantation (#2) &middot; Gaining share from Applied Materials</div>
+    <div class="pick-rationale">
+      The #2 ion implant equipment maker and actively gaining share from Applied Materials. Every advanced logic and memory wafer requires multiple implant steps to create transistor junctions. Axcelis is a focused pure-play in a growing equipment segment — while AMAT spreads across dozens of product lines, Axcelis concentrates all R&D on implant. Under-followed because ion implant is a "boring" process step that doesn't make headlines. Small-cap with improving margins and a clear competitive trajectory.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/ACLS" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">9</div>
+      <div class="pick-info">
+        <div class="pick-name">Legrand</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">LR</span>
+          <span class="pick-exchange">EPA &middot; France</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#ef4444"></span>PDUs &amp; Busbars</span>
+          <span class="pick-stage"><span class="sdot" style="background:#a3e635"></span>Racks</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~13% PDUs (Raritan) &middot; ~12% busbars &middot; Server racks &amp; cable management</div>
+    <div class="pick-rationale">
+      Legrand appears across multiple data center infrastructure cards — intelligent PDUs via their Raritan brand, busbar systems, server racks, and cable management. The market prices them as a French building electrical fittings company, but their Raritan intelligent PDUs are deployed in virtually every major hyperscale facility for per-outlet power monitoring and management. European listing and "electrical accessories" perception create a valuation discount on meaningful AI data center exposure.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/LR.PA" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+  <div class="pick">
+    <div class="pick-top">
+      <div class="pick-rank">10</div>
+      <div class="pick-info">
+        <div class="pick-name">FormFactor</div>
+        <div class="pick-meta">
+          <span class="pick-ticker">FORM</span>
+          <span class="pick-exchange">NASDAQ &middot; US</span>
+        </div>
+        <div class="pick-stages">
+          <span class="pick-stage"><span class="sdot" style="background:#fb923c"></span>Probe Cards</span>
+        </div>
+      </div>
+    </div>
+    <div class="pick-position">~28% probe cards (#1) &middot; Critical for wafer-level testing</div>
+    <div class="pick-rationale">
+      The world's largest probe card maker at ~28% share. AI chips are getting larger (reticle-scale), more complex (chiplets, 3D stacking), and require more test points at finer pitches — all of which drives probe card ASPs higher. Every AI chip must pass wafer sort before packaging, and FormFactor's advanced MEMS probes are the physical interface that makes that testing possible. A pure-play on semiconductor test complexity growth that the market under-follows because probe cards aren't glamorous.
+    </div>
+    <a class="pick-yf" href="https://finance.yahoo.com/quote/FORM" target="_blank" rel="noopener noreferrer">Yahoo Finance <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+  </div>
+
+</div>
+
+</div>
+
+<div class="footer">
+  Claude's Picks &mdash; AI Supply Chain Analysis &mdash; For educational purposes only
+</div>
+
+</body>
+</html>
